@@ -1,0 +1,4 @@
+name = User Extension
+description = Изменения и дополнения для модуля User
+core = 7.x
+package = Custom

@@ -1,0 +1,386 @@
+<?php
+
+/**
+ * Implements hook_init().
+ */
+function user_ext_init()
+{
+  global $base_url;
+
+  // для авторизованых пользователей редирект на Новости
+  if (!user_is_anonymous() && drupal_is_front_page()) {
+    drupal_goto($base_url . '/feed');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function user_ext_menu()
+{
+  return array(
+    'edit/profile' => array(
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('user_ext_profile_form', 1),
+      'access callback' => 'user_ext_edit_access',
+      'type' => MENU_CALLBACK,
+    ),
+  );
+}
+
+function user_ext_profile_form($form, &$form_state)
+{
+  $account = user_load($GLOBALS['user']->uid);
+  $category = 'account';
+
+  // During initial form build, add the entity to the form state for use during
+  // form building and processing. During a rebuild, use what is in the form
+  // state.
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
+  $form['#attributes']['class'][] = 'form-horizontal';
+
+  $form['#user'] = $account;
+  $form['#user_category'] = $category;
+
+  $form['title'] = [
+    '#markup' => '<h2 class="block-title-large">' . t('Basic info') . '</h2>',
+  ];
+
+  if ($category == 'account') {
+   // user_account_form($form, $form_state);
+    // Attach field widgets.
+    $langcode = entity_language('user', $account);
+    field_attach_form('user', $account, $form, $form_state, $langcode);
+  }
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  $form['#validate'][] = 'user_ext_profile_form_validate';
+  $form['#submit'][] = 'user_ext_profile_form_submit';
+
+  return $form;
+}
+
+function user_ext_profile_form_validate($form, &$form_state)
+{
+  entity_form_field_validate('user', $form, $form_state);
+}
+function user_ext_profile_form_submit($form, &$form_state)
+{
+  $account = $form_state['user'];
+  $category = $form['#user_category'];
+  // Remove unneeded values.
+  form_state_values_clean($form_state);
+
+  // Before updating the account entity, keep an unchanged copy for use with
+  // user_save() later. This is necessary for modules implementing the user
+  // hooks to be able to react on changes by comparing the values of $account
+  // and $edit.
+  $account_unchanged = clone $account;
+
+  entity_form_submit_build_entity('user', $account, $form, $form_state);
+
+  // Populate $edit with the properties of $account, which have been edited on
+  // this form by taking over all values, which appear in the form values too.
+  $edit = array_intersect_key((array) $account, $form_state['values']);
+
+  user_save($account_unchanged, $edit, $category);
+  $form_state['values']['uid'] = $account->uid;
+
+  // Clear the page cache because pages can contain usernames and/or profile information:
+  cache_clear_all();
+
+  drupal_set_message(t('The changes have been saved.'));
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function user_ext_block_info()
+{
+    $blocks = array(
+        'login' => [
+            'info' => t('User login'),
+            'cache' => DRUPAL_NO_CACHE,
+        ],
+        'register' => [
+            'info' => t('User register'),
+            'cache' => DRUPAL_NO_CACHE,
+        ],
+        'profile_photo' => [
+            'info' => t('User profile photo'),
+            'cache' => DRUPAL_CACHE_PER_USER,
+            'region' => 'sidebar_second',
+        ],
+        'profile_actions' => [
+            'info' => t('User profile actions'),
+            'cache' => DRUPAL_CACHE_PER_ROLE,
+            'region' => 'sidebar_second',
+            //'visibility' => BLOCK_VISIBILITY_PHP,
+            //'pages' => '',
+        ],
+    );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function user_ext_block_view($delta = '')
+{
+  global $user;
+
+  $block = array();
+
+  switch ($delta) {
+    case 'login':
+      // For usability's sake, avoid showing two login forms on one page.
+      if (!$user->uid && !(arg(0) == 'user' && !is_numeric(arg(1)))) {
+
+        $block['subject'] = t('Custom userlogin');
+        $block['content'] = drupal_get_form('user_ext_login_block');
+      }
+      return $block;
+
+    case 'register':
+      // For usability's sake, avoid showing two login forms on one page.
+      if (!$user->uid && !(arg(0) == 'user' && !is_numeric(arg(1)))) {
+
+        $block['subject'] = t('User register');
+        $block['content'] = drupal_get_form('user_register_form');
+      }
+      return $block;
+
+    case 'profile_photo':
+      $block['subject'] = t('User photo');
+      $block['content'] = _profile_photo_block_content();
+
+      return $block;
+
+    case 'profile_actions':
+      $block['subject'] = t('User photo');
+      $block['content'] = _profile_actions_block_content();
+
+      return $block;
+  }
+}
+
+function _profile_photo_block_content()
+{
+  global $user;
+
+  $photo_style = 'medium';
+  $photo_uri = 'public://default_images/no_photo.png';
+
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  if (!empty($user_wrapper->value()->picture)) {
+    $photo_uri = $user_wrapper->value()->picture->uri;
+  }
+
+  $photo = image_style_url($photo_style, $photo_uri);
+
+  $button = '';
+  if ($GLOBALS['user']->uid > 0) {
+    $button = '<a href="/edit/profile" class="btn btn-default btn-block">' . t('Edit profile') . '</a>';
+  }
+
+  return '<img src="' . $photo . '" alt="" class="img-responsive">' . $button;
+}
+
+function _profile_actions_block_content()
+{
+  $tree = menu_tree_page_data('menu-profile-actions');
+
+  // Localize the tree.
+  if (module_exists('i18n_menu')) {
+    $tree = i18n_menu_localize_tree($tree);
+  }
+
+  // Build links.
+  $profile_nav = menu_tree_output($tree);
+
+  return render($profile_nav);
+}
+
+///**
+// * изменить порядок выполнения hook_form_alter
+// * хук этого модуля выполняеть последним
+// */
+//function user_ext_module_implements_alter(&$implementations, $hook) {
+//  // Name of the hook.
+//  if ($hook != 'form_alter') {
+//    return;
+//  }
+//  $module = 'user_ext';
+//  $group = $implementations[$module];
+//  unset($implementations[$module]);
+//  $implementations[$module] = $group;
+//}
+
+/**
+ * hook_form_alter
+ */
+function user_ext_form_alter(array &$form, array &$form_state = array(), $form_id = NULL)
+{
+  if ($form_id) {
+    switch ($form_id) {
+      /** -------------------------- Изменение формы регистрации ------------ */
+      case 'user_register_form':
+        $form['header'] = [
+          '#markup' => '<h4>' .  t('First time at VAgro?'). '</h4><p>' . t('Instant registration') . '</p>',
+          '#weight' => -10,
+        ];
+
+        $form['field_user_name']['und'][0]['value']['#attributes']['placeholder'] = t('Your name');
+        unset($form['field_user_name']['und'][0]['value']['#title']);
+
+        $form['field_user_surname']['und'][0]['value']['#attributes']['placeholder'] = t('Surname');
+        unset($form['field_user_surname']['und'][0]['value']['#title']);
+
+        $form['account']['mail']['#attributes']['placeholder'] = t('E-mail address');
+        unset($form['account']['mail']['#title']);
+        unset($form['account']['mail']['#description']);
+
+        // вместо пароля с подтверждением и рекомендациями выводим одно поле пароля
+        unset($form['account']['pass']['#title']);
+        unset($form['account']['pass']['#description']);
+        $form['account']['pass']['#type'] = 'password';
+        $form['account']['pass']['#attributes']['placeholder'] = t('Password');
+        $form['account']['pass']['#attributes']['data'] = 'reg-pass';
+
+        $form['account']['pass1'] = array(
+          '#type' => 'password',
+          '#attributes' => array('placeholder' => t('Repeat password')),
+          '#states' => array(
+            'visible' => array(
+              ':input[data="reg-pass"]' => array(
+                'filled' => TRUE,
+              ),
+            ),
+          ),
+        );
+
+        $form['account']['name']['#type'] = 'hidden';
+        $form['account']['name']['#value'] = user_password();
+
+        $form['actions']['submit']['#value'] = t('Sign up');
+        $form['actions']['submit']['#attributes']['class'] = ['btn-success', 'btn-block'];
+
+        $form['#validate'][] = 'user_ext_user_register_form_validate';
+        $form['#submit'][] = 'user_ext_user_register_form_submit';
+        break;
+    }
+  }
+}
+
+/**
+ * --------------------------- Регистрация -------------------------------------
+ */
+function user_ext_user_register_form_validate(&$form, &$form_state)
+{
+  if (drupal_strlen($form_state['values']['field_user_name']['und'][0]['value']) < 2) form_set_error('field_user_name', 'Заполните имя пользователя');
+  if (empty($form_state['values']['field_user_surname']['und'][0]['value'])) form_set_error('field_user_surname', 'Заполните фамилию пользователя');
+  if (user_validate_mail($form_state['values']['mail'])) form_set_error('account][mail', 'Укажите корректный e-mail адрес');
+  if (drupal_strlen($form_state['values']['pass']) < 6) form_set_error('account][pass', 'Задайте пароль не менее 6 символов');
+  if ($form_state['values']['pass'] != $form_state['values']['pass1']) {
+    form_set_error('pass', 'Пароли должны совпадать');
+    form_set_error('pass1');
+    // не скрывать повтор пароля при ошибке
+    unset($form['account']['pass1']['#states']);
+  }
+}
+
+function user_ext_user_register_form_submit(&$form, &$form_state)
+{
+  // заменить имя пользователя на id
+  $account = $form_state['user'];
+  $account->name = 'id' . $account->uid;
+  user_save($account);
+}
+
+/**
+ * --------------------------- Логин -------------------------------------------
+ */
+/**
+ * hook_form_FORM_ID_alter
+ */
+function user_ext_login_block($form, &$form_state)
+{
+  $form['#attributes'] = ['class' => ['user-ext-login-form']];
+  $form['log_email'] = [
+    '#type' => 'textfield',
+    '#attributes' => array('placeholder' => t('E-mail address')),
+  ];
+    $form['log_pass'] = array(
+    '#type' => 'password',
+    '#attributes' => array('placeholder' => t('Password')),
+  );
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['log_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Sign in'),
+    '#attributes' => array('class' => ['btn-primary']),
+  );
+  $form['actions']['log_forgot'] = [
+    '#type' => 'button',
+    '#value' => l(t('Request new password'), 'user/password', array('attributes' => array('title' => t('Request new password via e-mail.')))),
+    '#attributes' => array('class' => ['btn-link']),
+  ];
+
+  $form['#validate'] = user_login_default_validators();
+  array_unshift($form['#validate'], 'user_ext_login_block_validate');
+  $form['#submit'] = ['user_ext_login_block_submit'];
+
+  return $form;
+}
+
+function user_ext_login_block_validate($form, &$form_state)
+{
+  if (user_validate_mail($form_state['values']['log_email'])) form_set_error('log_email', 'Укажите корректный e-mail адрес');
+  if (drupal_strlen($form_state['values']['log_pass']) < 6) form_set_error('log_pass', 'Задайте пароль не менее 6 символов');
+
+  if (isset($form_state['values']['log_email']) && $form_state['values']['log_email']) {
+    if ($name = db_query("SELECT name FROM {users} WHERE LOWER(mail) = LOWER(:name)", array(
+      ':name' => $form_state['values']['log_email'],
+    ))->fetchField()) {
+      form_set_value($form['log_email'], $name, $form_state);
+    }
+  }
+
+  $form_state['values']['name'] = $form_state['values']['log_email'];
+  $form_state['values']['pass'] = $form_state['values']['log_pass'];
+}
+
+/**
+ * свой submit для формы входа аналогично стандартному
+ */
+function user_ext_login_block_submit($form, &$form_state) {
+  global $user;
+  $user = user_load($form_state['uid']);
+  // изменить redirect на Новости
+  $form_state['redirect'] = 'feed';
+
+  user_login_finalize($form_state);
+}
+
+/**
+ * Access callback for user account editing.
+ */
+function user_ext_edit_access() {
+  return $GLOBALS['user']->uid > 0;
+}
+
+

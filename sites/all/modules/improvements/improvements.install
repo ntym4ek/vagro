@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * Implements hook_schema_alter().
+ */
+function improvements_schema_alter(&$schema) {
+  foreach (improvements_get_entity_data_info() as $entity_table) {
+    if (isset($schema[$entity_table]) && !isset($schema[$entity_table]['fields']['data'])) {
+      $schema[$entity_table]['fields']['data'] = array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data.',
+        'module' => 'improvements',
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_enable().
+ */
+function improvements_enable() {
+  _improvements_add_data_field();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function improvements_uninstall() {
+  $entity_types_info = entity_get_info();
+
+  foreach ($entity_types_info as $entity_type_info) {
+    $entity_base_table = $entity_type_info['base table'];
+    $entity_schema = drupal_get_schema($entity_base_table);
+
+    if (
+      isset($entity_schema['fields']['data']['module']) &&
+      $entity_schema['fields']['data']['module'] == 'improvements' &&
+      db_field_exists($entity_base_table, 'data')
+    ) {
+      db_drop_field($entity_base_table, 'data');
+    }
+  }
+}
+
+/**
+ * Add data column to entities table.
+ */
+function improvements_update_7101() {
+  _improvements_add_data_field();
+
+  variable_del('improvements_vocabularies_settings');
+
+  $webform_ajax = variable_get('improvements_webform_ajax', array());
+  foreach ($webform_ajax as $webform_nid) {
+    $webform_node = node_load($webform_nid);
+    $webform_node->data['webform_ajax'] = TRUE;
+    node_save($webform_node);
+  }
+  variable_del('improvements_webform_ajax');
+}
+
+/**
+ * Add data field to tables.
+ */
+function _improvements_add_data_field() {
+  foreach (improvements_get_entity_data_info() as $entity_table) {
+    $entity_schema = drupal_get_schema($entity_table, TRUE);
+
+    if ($entity_schema && isset($entity_schema['fields']['data']) && !db_field_exists($entity_table, 'data')) {
+      db_add_field($entity_table, 'data', $entity_schema['fields']['data']);
+    }
+  }
+}

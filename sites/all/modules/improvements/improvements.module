@@ -1,0 +1,458 @@
+<?php
+
+require_once 'improvements.admin.inc';
+require_once 'improvements.filter.inc';
+require_once 'improvements.taxonomy.inc';
+require_once 'improvements.webform.inc';
+require_once 'improvements.commerce.inc';
+require_once 'improvements.metatag.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function improvements_menu() {
+  $items = array();
+
+  if (module_exists('backup_migrate')) {
+    $items['admin/config/system/backup_migrate/run'] = array(
+      'page callback' => 'improvements_backup_migrate_run',
+      'access arguments' => array('perform backup'),
+      'type' => MENU_CALLBACK,
+    );
+  }
+
+  if (module_exists('dblog')) {
+    $items['logs'] = array(
+      'page callback' => 'improvements_logs_redirect',
+      'access arguments' => array('access site reports'),
+      'type' => MENU_CALLBACK,
+    );
+  }
+
+  if (module_exists('devel')) {
+    $items['devel'] = array(
+      'title' => 'Devel',
+      'page callback' => 'improvements_devel_page',
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+  }
+
+  $items['admin/config/people/accounts/restore-zero-user'] = array(
+    'page callback' => 'improvements_zero_user_restore',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_menu_alter()
+ */
+function improvements_menu_alter(&$items) {
+  $items['node/%node/delete']['context'] = MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE;
+
+  if (isset($items['devel/reinstall'])) {
+    $items['devel/reinstall']['type'] = MENU_LOCAL_TASK;
+    $items['devel/reinstall']['tab_parent'] = 'admin/modules';
+    $items['devel/reinstall']['tab_root'] = 'admin/modules';
+    $items['devel/reinstall']['weight'] = 30;
+    $items['devel/reinstall']['title'] = 'Reinstall';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function improvements_theme() {
+  return array(
+    'table_form' => array(
+      'render element' => 'form',
+    ),
+  );
+}
+
+/**
+ * Implements hook_css_alter().
+ */
+function improvements_css_alter(&$css) {
+  if (in_array($GLOBALS['theme'], array('seven', 'adminimal'))) {
+    $css_path = drupal_get_path('module', 'improvements') . '/improvements.css';
+
+    if (isset($css[$css_path])) {
+      $css[$css_path] = array(
+        'group' => CSS_THEME,
+        'weight' => 1,
+      ) + $css[$css_path];
+    }
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function improvements_user_login(&$edit, $account) {
+  if (variable_get('improvements_notify_admin_login')) {
+    if (
+      $account->uid == 1 &&
+      (empty($account->data['improvements_useragent']) || $account->data['improvements_useragent'] != md5($_SERVER['HTTP_USER_AGENT']))
+    ) {
+      $message = 'Дата: ' . date('r') . "\n";
+      $message .= 'IP: ' . ip_address() . "\n";
+      $message .= 'Host: ' . @gethostbyaddr(ip_address()) . "\n";
+      $message .= 'User Agent: ' . @$_SERVER['HTTP_USER_AGENT'] . "\n";
+
+      drupal_mail('system', 'mail', $account->mail, language_default(), array(
+        'context' => array(
+          'subject' => 'На сайте ' . $_SERVER['HTTP_HOST'] . ' произведён вход администратора с нового браузера',
+          'message' => $message,
+        )
+      ));
+
+      $account->data['improvements_useragent'] = md5($_SERVER['HTTP_USER_AGENT']);
+      user_save($account);
+    }
+  }
+}
+
+/**
+ * Preprocess function for html.tpl.php.
+ */
+function improvements_preprocess_html(&$vars) {
+  if (strpos($_SERVER['HTTP_HOST'], '.local')) {
+    $vars['classes_array'][] = 'state-dev';
+  }
+  if (function_exists('admin_menu_suppress') && user_access('access administration menu') && !admin_menu_suppress(FALSE)) {
+    $vars['classes_array'][] = 'admin-menu';
+  }
+}
+
+/**
+ * Implements hook_field_extra_fields().
+ */
+function improvements_field_extra_fields() {
+  $extra_fields = array();
+
+  foreach (array_keys(node_type_get_names()) as $node_type) {
+    $extra_fields['node'][$node_type]['display']['title'] = array(
+      'label' => t('Title'),
+      'description' => t('Title'),
+      'weight' => 0,
+    );
+
+    $extra_fields['node'][$node_type]['form']['options'] = array(
+      'label' => t('Publishing options'),
+      'description' => t('Publishing options'),
+      'weight' => 0,
+    );
+  }
+
+  return $extra_fields;
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function improvements_node_view($node, $view_mode, $langcode) {
+  static $extra_fields = array();
+
+  $key = 'node:' . $node->type . ':' . $view_mode;
+  if (!isset($extra_fields[$key])) {
+    $extra_fields[$key] = field_extra_fields_get_display('node', $node->type, $view_mode);
+  }
+
+  if (isset($extra_fields[$key]['title']) && $extra_fields[$key]['title']['visible']) {
+    $class_prefix = function_exists('_base_get_entity_class_prefix')
+      ? _base_get_entity_class_prefix('node', $node->type)
+      : drupal_html_class($node->type);
+
+    $node->content['title'] = array(
+      '#markup' => '<div class="' . $class_prefix . '-title">' . $node->title . '</div>',
+      '#weight' => $extra_fields[$key]['title']['weight'],
+    );
+  }
+}
+
+/**
+ * Preprocess function for node.tpl.php.
+ */
+function improvements_preprocess_node(&$vars) {
+  if (!empty($vars['content']['title'])) {
+    $vars['title'] = NULL;
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function improvements_cron() {
+  if (module_exists('commerce_order') && variable_get('improvements_delete_outdated_orders', FALSE)) {
+    improvements_delete_outdated_orders();
+  }
+}
+
+/**
+ * Implements hook_ckeditor_settings_alter().
+ */
+function improvements_ckeditor_settings_alter(&$settings, $conf) {
+  if ($settings['skin'] == 'moono') {
+    $settings['skin'] = 'moono-lisa';
+  }
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function improvements_element_info_alter(&$type) {
+  $type['textfield']['#pre_render'][] = 'improvements_textfield_pre_render';
+  $type['text_format']['#process'][] = 'improvements_text_format_process';
+  $type['text_format']['#resizable'] = FALSE;
+}
+
+/**
+ * Pre render callback for textfields.
+ */
+function improvements_textfield_pre_render($element) {
+  if (!empty($element['#title_display']) && $element['#title_display'] == 'placeholder') {
+    $element['#title_display'] = 'invisible';
+    $element['#attributes']['placeholder'] = $element['#title'];
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter(): field_ui_field_edit_form.
+ */
+function improvements_form_field_ui_field_edit_form_alter(&$form, $form_state) {
+  $field = $form['#field'];
+  $field_instance = $form['#instance'];
+
+  // Disable CKEditor
+  if (in_array($field_instance['widget']['type'], array('text_textarea', 'text_textarea_with_summary'))) {
+    $form['instance']['settings']['disable_ckeditor'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Disable CKEditor'),
+      '#default_value' => isset($field_instance['settings']['disable_ckeditor']) ? $field_instance['settings']['disable_ckeditor'] : FALSE,
+    );
+
+    $form['instance']['settings']['disable_format'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Disable format selector'),
+      '#default_value' => isset($field_instance['settings']['disable_format']) ? $field_instance['settings']['disable_format'] : FALSE,
+    );
+
+    $form['instance']['settings']['default_format'] = array(
+      '#type' => 'value',
+      '#value' => isset($field_instance['settings']['default_format']) ? $field_instance['settings']['default_format'] : NULL,
+    );
+  }
+
+  // Default cardinality for unlimited fields
+  $form['instance']['settings']['default_cardinality'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default cardinality'),
+    '#default_value' => isset($field_instance['settings']['default_cardinality']) ? $field_instance['settings']['default_cardinality'] : 1,
+    '#weight' => 20,
+    '#size' => 3,
+    '#states' => array(
+      'visible' => array(
+        '#edit-field-cardinality' => array(
+          'value' => FIELD_CARDINALITY_UNLIMITED,
+        ),
+      ),
+    ),
+  );
+
+  array_unshift($form['#submit'], 'improvements_form_field_ui_field_edit_form_submit');
+}
+
+/**
+ * field_ui_field_edit_form submit callback.
+ */
+function improvements_form_field_ui_field_edit_form_submit($form, &$form_state) {
+  $field_instance = $form_state['build_info']['args'][0];
+
+  if (!empty($field_instance['settings']['text_processing'])) {
+    $form_state['values']['instance']['settings']['default_format'] = $form_state['values'][$field_instance['field_name']]['und'][0]['format'];
+  }
+}
+
+/**
+ * Implements hook_field_update_instance().
+ */
+function improvements_field_update_instance($instance, $prior_instance) {
+  $field = field_info_field($instance['field_name']);
+
+  // Set default cardinality for unlimited fields
+  if (
+    $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED &&
+    isset($instance['settings']['default_cardinality']) &&
+    $instance['settings']['default_cardinality'] > 1
+  ) {
+    $instance['default_value'] = array_fill(0, $instance['settings']['default_cardinality'] - 1, NULL);
+    _field_write_instance($instance, TRUE);
+  }
+}
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function improvements_field_widget_form_alter(&$element, &$form_state, $context) {
+  $field_instance_settings = $context['instance']['settings'];
+
+  // Disable CKEditor
+  if (!empty($field_instance_settings['disable_ckeditor'])) {
+    $element['#wysiwyg'] = FALSE;
+  }
+
+  // Disable format selector
+  if (!empty($field_instance_settings['disable_format']) && $form_state['build_info']['form_id'] != 'field_ui_field_edit_form') {
+    $element['#disable_format'] = TRUE;
+  }
+
+  // Set default format
+  if (!empty($field_instance_settings['default_format'])) {
+    $element['#default_format'] = $field_instance_settings['default_format'];
+  }
+}
+
+/**
+ * Process callback for element 'text_format'.
+ */
+function improvements_text_format_process($element, $form_state, $complete_form) {
+  // Disable format selector
+  if (!empty($element['#disable_format'])) {
+    $element['format']['#access'] = FALSE;
+  }
+
+  // Set default format
+  if (!empty($element['#default_format'])) {
+    $default_format = $element['#default_format'];
+    if (isset($element['format']['format']['#options'][$default_format])) {
+      $element['format']['format']['#default_value'] = $default_format;
+    }
+  }
+
+  return $element;
+}
+
+/**
+ * Return entity tables with extra column 'data'.
+ */
+function improvements_get_entity_data_info() {
+  return array(
+    'node' => 'node',
+    'taxonomy_term' => 'taxonomy_term_data',
+    'taxonomy_vocabulary' => 'taxonomy_vocabulary',
+  );
+}
+
+/**
+ * Implements hook_entity_load().
+ */
+function improvements_entity_load($entities, $type) {
+  static $entity_data_info;
+
+  if (!$entity_data_info) {
+    $entity_data_info = improvements_get_entity_data_info();
+  }
+
+  foreach ($entities as $entity) {
+    if (isset($entity_data_info[$type])) {
+      $entity->data = $entity->data ? unserialize($entity->data) : array();
+    }
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function improvements_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'node_load' && isset($implementations['user'])) {
+    unset($implementations['user']);
+  }
+}
+
+/**
+ * Implements hook_node_prepare().
+ */
+function improvements_node_prepare($node) {
+  // Add author to node, because user_node_load() is removed
+  if (!isset($node->name) && $node->uid && ($author = user_load($node->uid))) {
+    $node->name = $author->name;
+  }
+}
+
+/**
+ * Menu callback for "devel" router.
+ */
+function improvements_devel_page() {
+  return menu_tree('devel');
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function improvements_admin_paths() {
+  return array(
+    'devel' => TRUE,
+  );
+}
+
+/**
+ * Format form as table.
+ */
+function theme_table_form($vars) {
+  $form = $vars['form'];
+  $header = isset($vars['#header']) ? $vars['#header'] : array();
+  $header_created = (bool)$header;
+  $rows = array();
+
+  foreach (element_children($form) as $key) {
+    foreach (element_children($form[$key]) as $name) {
+      // Create header
+      if (!$header_created) {
+        $header[] = $form[$key][$name]['#title'];
+      }
+
+      // Hide title
+      $form[$key][$name]['#title_display'] = 'invisible';
+
+      // Cell data
+      $cell = array('data' => drupal_render($form[$key][$name]));
+
+      // Cell attributes
+      if (isset($form[$key][$name]['#td_attributes'])) {
+        $cell += $form[$key][$name]['#td_attributes'];
+      }
+
+      $rows[$key]['data'][] = $cell;
+    }
+
+    $header_created = TRUE;
+
+    // Row attributes
+    if (isset($form[$key]['#attributes'])) {
+      $rows[$key] += $form[$key]['#attributes'];
+    }
+  }
+
+  return theme('table', array(
+    'rows' => $rows,
+    'header' => $header,
+    'attributes' => isset($form['#attributes']) ? $form['#attributes'] : array(),
+    'caption'    => isset($form['#caption'])    ? $form['#caption']    : NULL,
+    'colgroups'  => isset($form['#colgroups'])  ? $form['#colgroups']  : NULL,
+    'sticky'     => isset($form['#sticky'])     ? $form['#sticky']     : NULL,
+    'empty'      => isset($form['#empty'])      ? $form['#empty']      : NULL,
+  ));
+}
+
+/**
+ * AJAX command for add css class to element.
+ */
+function ajax_command_add_class($selector, $class) {
+  return ajax_command_invoke($selector, 'addClass', array($class));
+}

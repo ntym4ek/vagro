@@ -1,0 +1,13 @@
+name = Drupal Improvements
+description = Drupal Improvements
+core = 7.x
+stylesheets[all][] = improvements.css
+scripts[] = improvements.js
+files[] = DrupalH1MetaTag.inc
+
+; Information added by Drupal.org packaging script on 2018-02-20
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "improvements"
+datestamp = "1519122487"
+

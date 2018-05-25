@@ -1,0 +1,171 @@
+/* Form */
+textarea {
+  font-family: Consolas, monospace;
+  font-size: 1em;
+  -moz-tab-size : 2;
+  -o-tab-size : 2;
+  tab-size : 2;
+}
+label + .tabledrag-toggle-weight-wrapper,
+legend + .fieldset-wrapper > .tabledrag-toggle-weight-wrapper {
+  margin-top: -1.4em;
+}
+form .field-multiple-table th.field-label {
+  padding-left: 10px;
+}
+.vertical-tabs .form-type-textfield input {
+  width: auto;
+  max-width: 100%;
+}
+tr.odd .form-item .description,
+tr.even .form-item .description {
+  white-space: normal;
+}
+.fieldset-wrapper > .form-item:last-child {
+  margin-bottom: 0;
+}
+.form-managed-file .form-submit {
+  margin-left: 10px;
+}
+
+/* Inline entity form */
+.field-widget-inline-entity-form > div > fieldset > .fieldset-wrapper {
+  padding-left: 0;
+}
+.field-widget-inline-entity-form > div > fieldset > legend .fieldset-legend {
+  padding-left: 0;
+  text-transform: none;
+}
+.ief-form > legend .fieldset-legend {
+  padding-left: 0;
+  text-transform: none;
+}
+.ief-entity-fieldset {
+  padding-top: 10px;
+}
+.ief-entity-fieldset > legend {
+  display: none;
+}
+.ief-entity-fieldset > .fieldset-wrapper {
+  padding-left: 0;
+}
+.ief-entity-fieldset > .fieldset-wrapper > .field-type-image .fieldset-legend {
+  padding-left: 0;
+  text-transform: none;
+}
+.ief-entity-fieldset > .fieldset-wrapper > .field-type-image .fieldset-wrapper {
+  padding-left: 0;
+}
+
+/* Views */
+#edit-options-default-action,
+#edit-options-exception.collapsible {
+  float: none;
+  width: auto;
+}
+#edit-options-exception.collapsible {
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+/* Toolbar */
+#toolbar .menu a {
+  padding: 0 6px !important;
+}
+
+/* Status report */
+.system-status-report .status-title {
+  font-weight: bold;
+}
+.system-status-report .status-description {
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+
+.field-widget-text-textarea-with-summary {
+  margin-bottom: 20px;
+}
+.filter-guidelines {
+  display: none;
+}
+
+/* DB log */
+.dblog-event th {
+  width: 11em;
+}
+
+/* Devel */
+.krumo-root {
+  clear: both;
+  text-align: left;
+}
+.search-krumo .form-text,
+.search-krumo .form-submit {
+  margin: 0;
+  padding: 5px 6px;
+  border: 1px solid #909090;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  font-family: Tahoma, sans-serif;
+  font-size: 14px;
+  color: black;
+}
+.search-krumo .form-text {
+  background: white;
+}
+.search-krumo .form-submit {
+  background: #CFCFCF;
+  text-transform: none;
+}
+.dev-query {
+  text-align: center;
+  font-size: 11px;
+}
+
+/* Admin menu */
+#admin-menu {
+  font-family: Tahoma, sans-serif !important;
+  /*font-size: 12px !important;*/
+}
+#admin-menu,
+#admin-menu .dropdown {
+  z-index: 1000 !important;
+}
+#admin-menu a {
+  /*padding: 8px !important;*/
+}
+#admin-menu ul ul {
+  width: 230px !important;
+}
+#admin-menu ul ul li {
+  width: 100% !important;
+  position: relative;
+}
+#admin-menu ul ul ul {
+  top: 0 !important;
+  margin-top: 0 !important;
+  margin-left: 230px !important;
+}
+#admin-menu li {
+  opacity: 1 !important;
+}
+#admin-menu li.expandable {
+  background-position: right 7px center !important;
+}
+#admin-menu-menu > li > ul {
+  display: block !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .1s ease .3s;
+}
+#admin-menu-menu > li:hover > ul {
+  opacity: 1;
+  visibility: visible;
+}
+body.admin-menu.admin-menu {
+  margin-top: 28px !important;
+}
+.state-dev .admin-menu-icon {
+  background: #911;
+}

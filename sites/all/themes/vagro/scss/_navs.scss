@@ -1,0 +1,27 @@
+.region-sidebar-first {
+  .nav > li > a {
+    height: 28px;
+    line-height: 27px;
+    padding: 0;
+    white-space: nowrap;
+    &:hover,
+    &:focus {
+      background-color: #e1e5eb;
+      border-radius: 2px;
+    }
+  }
+}
+
+.block .menu.nav {
+  padding: 6px 0;
+  & > li > a {
+    line-height: $nav-link-height - 1;
+    height: $nav-link-height;
+    padding: 0 0 0 20px;
+    &.active {
+      background-color: $nav-link-hover-bg;
+      border-left: 2px solid #5181b8;
+      padding-left: 18px;
+    }
+  }
+}

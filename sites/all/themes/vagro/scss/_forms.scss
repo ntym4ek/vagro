@@ -1,0 +1,71 @@
+.form-group:last-child,
+.panel:last-child {
+  margin-bottom: 0;
+}
+.form-horizontal .form-group {
+  margin-left: 0;
+  margin-right: 0;
+}
+.form-actions {
+  @include clearfix;
+  padding-bottom: $form-group-margin-bottom; // в блоке неn padding по периметру и последняя группа прижимается к низу
+}
+
+.form-horizontal {
+  .form-group > label {
+    color: $field-label-color; font-weight: 400;
+    @include make-sm-column(6);
+  }
+  .form-group .form-input-wrapper {
+    @include make-sm-column(11);
+  }
+  .form-actions {
+    @include make-sm-column-offset(6);
+    .form-submit {
+      margin: 0 $grid-gutter-width/2;
+    }
+  }
+}
+
+
+/**
+* -------------------------------------- Отдельные формы -------------------------------------------------------------
+*/
+
+// постер
+.statuses-update {
+  margin: 0;
+}
+#statuses-box {
+  position: relative;
+  img {
+    float: left;
+    width: 50px;
+    position: absolute; top: 10px; left: 15px;
+  }
+  .statuses-form {
+    margin-left: 80px;
+    padding: 10px 15px 10px 0;
+  }
+  .form-actions {
+    background: #fafbfc;
+    border-top: 1px solid $block-divider-color;
+    padding: 15px 20px;
+    border-radius: 0 0 2px 2px;
+  }
+}
+
+// блок регистрации
+#block-user-ext-register {
+  text-align: center;
+  p { margin-bottom: 20px; }
+  h4 {
+    margin: 0 0 5px 0;
+  }
+}
+
+// блок поиска
+.block-search .form-search {
+  @include input-size('.btn-primary', $input-height-small, $padding-small-vertical, $padding-small-horizontal, $font-size-small, $line-height-small, $input-border-radius-small);
+  .form-actions { padding: 0; }
+}

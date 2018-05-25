@@ -1,0 +1,41 @@
+.block {
+  background-color: #fff;
+  border: 1px solid $block-border-color;
+  border-radius: 0;
+  margin: 15px 0 0;
+  &:first-child {
+    margin-top: 0;
+  }
+  h2.block-title {
+    font-size: $font-size-block-title;
+    line-height: 40px;
+    padding: 0 15px; margin: 0;
+  }
+  h2.block-title-large {
+    background: #fafbfc;
+    border-bottom: 1px solid $block-divider-color;
+    font-size: 1.4em;
+    margin: 0 0 $form-group-margin-bottom 0; padding: 0 20px;
+    height: 54px; line-height: 54px;
+  }
+}
+
+
+// ------------------------------------- настройки отдельных блоков ------------------------------------------------
+#block-system-main {
+
+}
+
+#block-user-ext-register,
+#block-user-ext-login {
+  //background-color: #fff;
+  //border: 1px solid #e3e3e3;
+  //border-radius: 0;
+  min-height: 20px;
+  padding: 25px; margin: 30px 0 20px;
+}
+
+#block-user-ext-profile-photo {
+  padding: 15px;
+  .btn { margin-top: 10px; }
+}
