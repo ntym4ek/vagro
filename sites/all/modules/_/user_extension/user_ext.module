@@ -9,7 +9,7 @@ function user_ext_init()
 
   // для авторизованых пользователей редирект на Новости
   if (!user_is_anonymous() && drupal_is_front_page()) {
-    drupal_goto($base_url . '/feed');
+    drupal_goto($base_url . '/posts');
   }
 }
 
@@ -371,7 +371,7 @@ function user_ext_login_block_submit($form, &$form_state) {
   global $user;
   $user = user_load($form_state['uid']);
   // изменить redirect на Новости
-  $form_state['redirect'] = 'feed';
+  $form_state['redirect'] = 'posts';
 
   user_login_finalize($form_state);
 }

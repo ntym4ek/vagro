@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * @file
+ *   Install, update, and uninstall functions for the Statuses module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function post_schema() {
+  $schema = array();
+  $schema['posts'] = array(
+    'description' => 'Stores posts.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => 'The Post ID.',
+      ),
+      'senid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The ID of the entity that created the post.',
+      ),
+      'sentype' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The type of entity that created the post.',
+      ),
+      'recid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The ID of the entity that received the post.',
+      ),
+      'rectype' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The type of entity that received the post (context).',
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The time the post was created.',
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The time the post was changed.',
+      ),
+      'message' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => 'The post.',
+      ),
+      'image_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The file ID of the image attached to the post.',
+      ),
+
+    ),
+    'indexes' => array(
+      'senid'   => array('senid'),
+      'sentype' => array('sentype'),
+      'recid'   => array('recid'),
+      'rectype' => array('rectype'),
+      'created' => array('created'),
+      'changed' => array('changed'),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}

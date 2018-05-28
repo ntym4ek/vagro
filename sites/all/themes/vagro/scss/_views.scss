@@ -20,8 +20,38 @@
     .post-author-info {
       margin-left: 65px;
       padding-top: 8px;
+      position: relative;
       h5 { margin: 0; }
       .post-date { padding-top: 3px; }
+      .post-actions-button {
+        color: $text-color; font-size: 18px; line-height: 12px;
+        position: absolute; top: 5px; right: 0;
+        opacity: .4;
+        &:hover,
+        &:focus {
+          opacity: .7;
+        }
+      }
+      .post-actions-container { display: none; }
+      .post-actions { margin: -10px -15px; }
+    }
+    .post-card-content {
+      padding: 8px 20px 20px;
+
+    }
+    footer {
+      padding: 0 20px;
+      .post-buttons {
+        border-top: 1px solid $block-divider-color;
+        font-size: 20px;
+        padding: 12px 0;
+        a {
+          color: $text-color;
+          opacity: .4;
+          &:hover { opacity: .7; }
+          &:not(:first-child) { margin-left: 15px; }
+        }
+      }
     }
   }
 }

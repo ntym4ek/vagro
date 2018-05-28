@@ -17,7 +17,7 @@
   & > li > a {
     line-height: $nav-link-height - 1;
     height: $nav-link-height;
-    padding: 0 0 0 20px;
+    padding: 0 20px;
     &.active {
       background-color: $nav-link-hover-bg;
       border-left: 2px solid #5181b8;

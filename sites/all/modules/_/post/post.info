@@ -1,0 +1,6 @@
+name = Post
+description = Модуль Записей
+core = 7.x
+package = Custom
+
+scripts[] = 'post.js'

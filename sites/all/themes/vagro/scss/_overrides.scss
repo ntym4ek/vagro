@@ -11,8 +11,9 @@ $grid-breakpoint:     "screen and (min-width: #{$grid-float-breakpoint})";
   box-shadow: $shadow;
 }
 
-a {
-  outline: none;
+*,
+*:focus{
+  outline: none!important;
 }
 
 html {
@@ -888,7 +889,7 @@ a {
   .user-info {
     padding: 15px 20px;
     .user-top {
-      border-bottom: 1px solid #e7e8ec;
+      border-bottom: 1px solid $block-divider-color;
       padding-bottom: $form-group-margin-bottom;
       h2 {
         font-size: 19px; line-height: 25px;

@@ -33,19 +33,22 @@
 */
 
 // постер
-.statuses-update {
-  margin: 0;
-}
-#statuses-box {
+.post-form {
   position: relative;
-  img {
-    float: left;
-    width: 50px;
-    position: absolute; top: 10px; left: 15px;
+  .post-field-wrap {
+    margin-bottom: 0;
+    img {
+      width: 50px;
+      position: absolute; top: 10px; left: 15px;
+    }
   }
-  .statuses-form {
-    margin-left: 80px;
+  .post-field {
+    margin-left: 65px;
     padding: 10px 15px 10px 0;
+    textarea {
+      border: none;
+      box-shadow: none;
+    }
   }
   .form-actions {
     background: #fafbfc;

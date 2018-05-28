@@ -23,6 +23,8 @@ regions[footer]         = 'Footer'
 ;;;;;;;;;;;;;;;;;;;;;
 
 stylesheets[all][] = css/style.css
+stylesheets[all][] = fonts/fontawesome/css/fontawesome-all.css
+
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Scripts
