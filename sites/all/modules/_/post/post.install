@@ -86,3 +86,20 @@ function post_schema() {
 
   return $schema;
 }
+
+/**
+ * hook_install
+ */
+function post_install() {
+  // задать начальные права пользователей
+    // просмотр Записей анонимам
+  _update_7000_user_role_grant_permissions(1, array('view posts'), 'post');
+    // создание, редактирование и удаление своих записей для авторизованных и неподтвержденных
+  $roles = array(
+    '4' => 'non-confirmed',
+    '2' => 'authorized',
+  );
+  foreach ($roles as $rid => $role) {
+    _update_7000_user_role_grant_permissions($rid, array('edit own posts', 'delete own posts', 'create posts', 'view posts'), 'post');
+  }
+}

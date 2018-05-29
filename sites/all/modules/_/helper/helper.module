@@ -1,5 +1,7 @@
 <?php
 
+include 'includes/helper.blocks.inc';
+
 /**
  * изменить порядок выполнения hook_form_alter
  * хук этого модуля выполняеть последним
@@ -19,7 +21,7 @@ function helper_module_implements_alter(&$implementations, $hook) {
 /**
  * hook_form_alter
  */
-function helper_form_alter(array &$form, array &$form_state = array(), $form_id = NULL)
+function helper_form_alter(&$form, &$form_state = array(), $form_id = NULL)
 {
   if ($form_id) {
     switch ($form_id) {
@@ -33,23 +35,5 @@ function helper_form_alter(array &$form, array &$form_state = array(), $form_id 
   }
 }
 
-/**
- * -------------------------- Блоки --------------------------------------------
- * функции, определяющие видимость блоков при использовании модуля
- * Extended block visibility
- * https://www.drupal.org/project/extended_block_visibility
- */
-function _vagro_system_main_menu_block_visibility()
-{
-  return (user_is_anonymous()) ? false : true;
-}
 
-/**
- * сформировать имя пользователя
- */
-function _user_name($user)
-{
-  $user_wrapper = entity_metadata_wrapper('user', $user);
-  return $user_wrapper->field_user_name->value() . ' ' . $user_wrapper->field_user_surname->value();
-}
 

@@ -33,17 +33,16 @@ function vagro_preprocess_node(&$vars) {
     $photo_style = 'thumbnail';
     $photo_uri = 'public://default_images/no_photo.png';
 
-    $user_wrapper = entity_metadata_wrapper('user', $user);
-    if (!empty($user_wrapper->value()->picture)) {
-      $photo_uri = $user_wrapper->value()->picture->uri;
+    if ($user = user_load($user->uid)) {
+      $photo_uri = $user->picture->uri;
+      $vars['author_title'] = $user->realname;
+      $vars['author_url'] = url('user/' . $user->uid);
     }
-
     $vars['author_photo'] = image_style_url($photo_style, $photo_uri);
   }
+
   //
   $vars['post_url'] = url('node/' . $vars['node']->nid);
-  $vars['author_url'] = url('user/' . $vars['node']->uid);
-  $vars['author_title'] = _user_name($vars['node']->uid);
 }
 
 

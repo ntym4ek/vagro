@@ -109,28 +109,44 @@ function user_ext_profile_form_submit($form, &$form_state)
  */
 function user_ext_block_info()
 {
-    $blocks = array(
-        'login' => [
-            'info' => t('User login'),
-            'cache' => DRUPAL_NO_CACHE,
-        ],
-        'register' => [
-            'info' => t('User register'),
-            'cache' => DRUPAL_NO_CACHE,
-        ],
-        'profile_photo' => [
-            'info' => t('User profile photo'),
-            'cache' => DRUPAL_CACHE_PER_USER,
-            'region' => 'sidebar_second',
-        ],
-        'profile_actions' => [
-            'info' => t('User profile actions'),
-            'cache' => DRUPAL_CACHE_PER_ROLE,
-            'region' => 'sidebar_second',
-            //'visibility' => BLOCK_VISIBILITY_PHP,
-            //'pages' => '',
-        ],
-    );
+  $blocks = array(
+    'login' => [
+      'info' => t('User login'),
+      'cache' => DRUPAL_NO_CACHE,
+      'region' => 'sidebar_first',
+      'status' => 1,
+      'weight' => -10,
+      'visibility' => BLOCK_VISIBILITY_PHP,
+      'pages' => '<?php return login_helper_blocks(); ?>',
+    ],
+    'register' => [
+      'info' => t('User register'),
+      'cache' => DRUPAL_NO_CACHE,
+      'region' => 'sidebar_first',
+      'status' => 1,
+      'weight' => -5,
+      'visibility' => BLOCK_VISIBILITY_PHP,
+      'pages' => '<?php return register_helper_blocks(); ?>',
+    ],
+    'profile_photo' => [
+      'info' => t('User profile photo'),
+      'cache' => DRUPAL_CACHE_PER_USER,
+      'region' => 'sidebar_second',
+      'status' => 1,
+      'weight' => -10,
+      'visibility' => BLOCK_VISIBILITY_PHP,
+      'pages' => '<?php return profile_photo_helper_blocks(); ?>',
+    ],
+    'profile_actions' => [
+      'info' => t('User profile actions'),
+      'cache' => DRUPAL_CACHE_PER_ROLE,
+      'region' => 'sidebar_second',
+      'status' => 1,
+      'weight' => -5,
+      'visibility' => BLOCK_VISIBILITY_PHP,
+      'pages' => '<?php return profile_actions_helper_blocks(); ?>',
+    ],
+  );
 
   return $blocks;
 }
@@ -140,39 +156,23 @@ function user_ext_block_info()
  */
 function user_ext_block_view($delta = '')
 {
-  global $user;
-
   $block = array();
 
   switch ($delta) {
     case 'login':
-      // For usability's sake, avoid showing two login forms on one page.
-      if (!$user->uid && !(arg(0) == 'user' && !is_numeric(arg(1)))) {
-
-        $block['subject'] = t('Custom userlogin');
         $block['content'] = drupal_get_form('user_ext_login_block');
-      }
       return $block;
 
     case 'register':
-      // For usability's sake, avoid showing two login forms on one page.
-      if (!$user->uid && !(arg(0) == 'user' && !is_numeric(arg(1)))) {
-
-        $block['subject'] = t('User register');
         $block['content'] = drupal_get_form('user_register_form');
-      }
       return $block;
 
     case 'profile_photo':
-      $block['subject'] = t('User photo');
       $block['content'] = _profile_photo_block_content();
-
       return $block;
 
     case 'profile_actions':
-      $block['subject'] = t('User photo');
       $block['content'] = _profile_actions_block_content();
-
       return $block;
   }
 }

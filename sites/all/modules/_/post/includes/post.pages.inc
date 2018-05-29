@@ -39,14 +39,29 @@ function post_page_edit($post) {
  * @see post_delete_confirm_submit()
  */
 function post_delete_confirm($form, &$form_state, $post) {
-  $form['post_id'] = array('#type' => 'value', '#value' => $post->id);
-  return confirm_form($form,
-    t('Are you sure you want to delete post?'),
+  $form = drupal_get_form('post_form', $post);
+  unset($form['#validate']);
+  unset($form['#submit']);
+
+  $form['post_id'] = array(
+    '#type' => 'value',
+    '#value' => $post->id
+  );
+  $form = confirm_form($form,
+    '',
     'posts',
-    t('This action cannot be undone.'),
+    t('Are you sure you want to delete post? This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
   );
+
+  $form['description']['#prefix'] = '<div class="post-description">';
+  $form['description']['#suffix'] = '</div>';
+
+  $form['actions']['submit']['#attributes']['class'][] = 'pull-right';
+  $form['actions']['cancel']['#attributes']['class'][] = 'btn btn-link';
+
+  return $form;
 }
 
 /**
@@ -59,6 +74,4 @@ function post_delete_confirm_submit($form, &$form_state) {
     post_delete($form_state['values']['post_id']);
     drupal_set_message(t('Post has been deleted.'));
   }
-
-  $form_state['redirect'] = 'admin/config/post/posts';
 }

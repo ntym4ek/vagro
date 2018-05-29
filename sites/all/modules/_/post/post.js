@@ -2,18 +2,12 @@
     Drupal.behaviors.post = {
         attach: function (context, settings) {
 
-            // вставка отзывов в popup
-            $(".post-actions-button").each(function(i, obj) {
-                $(this).popover({
-                    html: true,
-                    content: function() {
-                        return $('.post-actions-container').html();
-                    }
-                });
-            });
 
+            // ------------------------------- Форма  ----------------------------------------------
+            // спрятать кнопки до фокуса на тексте
             $('.post-form').once(function(){
-                $('.form-actions').hide();
+                var $message = $('.post-form textarea').val();
+                if ($message === '') $('.form-actions').hide();
                 $('textarea[name="message"]').focusin(function() {
                     $('.form-actions').show();
                 });

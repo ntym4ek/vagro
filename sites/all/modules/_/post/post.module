@@ -135,17 +135,17 @@ function post_permission() {
 /**
  * --------------------------------------- Форма ------------------------------------------------
  */
-function post_form($form, &$form_state)
+function post_form($form, &$form_state, $post = NULL)
 {
   global $user;
+
+  if ($post) $form_state['#post'] = $post;
+
   $photo_style = 'thumbnail';
   $photo_uri = 'public://default_images/no_photo.png';
-
-  $user_wrapper = entity_metadata_wrapper('user', $user);
-  if (!empty($user_wrapper->value()->picture)) {
-    $photo_uri = $user_wrapper->value()->picture->uri;
+  if ($user = user_load($user->uid)) {
+    $photo_uri = $user->picture->uri;
   }
-
   $photo = image_style_url($photo_style, $photo_uri);
 
   $form = [
@@ -162,6 +162,7 @@ function post_form($form, &$form_state)
   $form['field']['message'] = [
     '#type' => 'textarea',
     '#rows' => 2,
+    '#default_value' => empty($post->message) ? '' : $post->message,
     '#attributes' => [
       'class' => ['autoExpand'],
       'placeholder' => t('What\'s new?'),
@@ -176,9 +177,8 @@ function post_form($form, &$form_state)
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Post'),
+    '#value' => empty($post) ? t('Post') : t('Save'),
     '#attributes' => ['class' => ['pull-right']],
-
   );
 
   return $form;
@@ -195,15 +195,20 @@ function post_form_submit(&$form, &$form_state)
   $recid = 0;
   $rectype = '';
 
-  // создать Запись
-  $post = entity_create('post', array(
-    'senid' => $GLOBALS['user']->uid,
-    'sentype' => 'user',
-    'recid' => $recid,
-    'rectype' => $rectype,
-    'created' => time(),
-    'message' => $form_state['values']['message'],
-  ));
+  if (empty($form_state['#post'])) {
+    // создать Запись
+    $post = entity_create('post', array(
+      'senid' => $GLOBALS['user']->uid,
+      'sentype' => 'user',
+      'recid' => $recid,
+      'rectype' => $rectype,
+      'created' => time(),
+      'message' => $form_state['values']['message'],
+    ));
+  } else {
+    $post = $form_state['#post'];
+    $post->message = $form_state['values']['message'];
+  }
   entity_save('post', $post);
 }
 
@@ -217,13 +222,20 @@ function post_block_info()
     'post_form' => [
       'info' => t('Post form'),
       'cache' => DRUPAL_NO_CACHE,
+      'region' => 'content',
+      'status' => 1,
+      'weight' => 10,
       'visibility' => BLOCK_VISIBILITY_PHP,
-      'pages' => '<?php return post_access("create", "post"); ?>'
+      'pages' => '<?php return post_form_helper_blocks(); ?>',
     ],
     'news_menu' => [
       'info' => t('News menu'),
       'cache' => DRUPAL_CACHE_PER_ROLE,
       'region' => 'sidebar_second',
+      'status' => 1,
+      'weight' => -1,
+      'visibility' => BLOCK_VISIBILITY_PHP,
+      'pages' => '<?php return news_menu_helper_blocks(); ?>',
     ],
   );
 
@@ -235,20 +247,15 @@ function post_block_info()
  */
 function post_block_view($delta = '')
 {
-  global $user;
-
   $block = array();
 
   switch ($delta) {
     case 'post_form':
-      $block['subject'] = t('Post form');
       $block['content'] = drupal_get_form('post_form');
-
       return $block;
-    case 'news_menu':
-      $block['subject'] = t('News menu');
-      $block['content'] = _news_menu_block_content();
 
+    case 'news_menu':
+      $block['content'] = _news_menu_block_content();
       return $block;
   }
 }

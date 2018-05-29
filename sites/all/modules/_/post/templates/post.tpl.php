@@ -86,10 +86,10 @@
     <div class="post-author-info">
       <h5><a href="<?php print $sen_url; ?>"><?php print $sen_name; ?></a></h5>
       <div class="post-date"><?php print $post_date; ?></div>
-      <a tabindex="0" class="btn btn-link post-actions-button" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom">
+      <a tabindex="0" class="btn btn-link post-actions-button popover-button" role="button" data-toggle="popover" data-trigger="focus" data-placement="bottom">
         <i class="fas fa-ellipsis-h"></i>
       </a>
-      <div class="post-actions-container"><?php print $actions; ?></div>
+      <div class="popover-container"><?php print $actions; ?></div>
 
     </div>
   </header>
