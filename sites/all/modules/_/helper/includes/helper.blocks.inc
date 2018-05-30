@@ -38,7 +38,7 @@ function post_form_helper_blocks()
  */
 function news_menu_helper_blocks()
 {
-  $pages = ['posts', 'post/*'];
+  $pages = ['stream', 'post/*'];
   return _check_pages_match($pages, TRUE);
 }
 
@@ -60,7 +60,15 @@ function profile_actions_helper_blocks()
   return _check_pages_match($pages, TRUE);
 }
 
+/**
+ * блок меню вывода Записей в профиле
+ */
 
+function stream_profile_helper_blocks()
+{
+  $pages = ['user/*'];
+  return _check_pages_match($pages, TRUE);
+}
 
 /**
  * проверка совпадения массива страниц и текущей страницы
@@ -93,13 +101,14 @@ function _check_pages_match($pages, $visibility = TRUE)
  * https://www.drupal.org/project/extended_block_visibility
  * todo переделать бы под свои функции видимости а блок отключить
  */
-function _vagro_system_main_menu_block_visibility()
+function _system_main_menu_block_visibility()
 {
   return (user_is_anonymous()) ? false : true;
 }
 
-function _vagro_views_posts_block_block_visibility()
+function _views_posts_block_block_visibility()
 {
-  $pages = ['posts', 'user', 'user/*'];
+  $pages = ['stream', 'user', 'user/*'];
   return _check_pages_match($pages, TRUE);
 }
+

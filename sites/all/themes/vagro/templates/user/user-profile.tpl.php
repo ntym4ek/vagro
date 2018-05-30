@@ -37,7 +37,7 @@
 <div class="profile"<?php print $attributes; ?>>
   <div class="user-info">
     <div class="user-top">
-      <h2><?php print $user_profile['field_user_name']['#items'][0]['value'] . ' ' . $user_profile['field_user_surname']['#items'][0]['value']; ?></h2>
+      <h2><?php print $username; ?></h2>
     </div>
     <div class="user-middle row">
       <div class="field clearfix">

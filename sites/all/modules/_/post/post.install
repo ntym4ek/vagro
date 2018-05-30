@@ -92,8 +92,19 @@ function post_schema() {
  */
 function post_install() {
   // задать начальные права пользователей
+    // просмотр Профилей всем
+  $roles = array(
+    '1' => 'anonimous',
+    '4' => 'non-confirmed',
+    '2' => 'authorized',
+  );
+  foreach ($roles as $rid => $role) {
+    _update_7000_user_role_grant_permissions($rid, array('access user profiles'), 'post');
+  }
+
     // просмотр Записей анонимам
   _update_7000_user_role_grant_permissions(1, array('view posts'), 'post');
+
     // создание, редактирование и удаление своих записей для авторизованных и неподтвержденных
   $roles = array(
     '4' => 'non-confirmed',

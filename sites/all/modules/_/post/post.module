@@ -5,6 +5,7 @@
  */
 
 include 'includes/post.entity.inc';
+include 'includes/post.context.inc';
 //include 'includes/post.pages.inc';
 //include 'includes/post.admin.inc';
 
@@ -34,9 +35,9 @@ function post_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-  $items['posts'] = array(
-    'title' => 'Posts',
-    'page callback' => 'posts_page',
+  $items['stream'] = array(
+    'title' => 'Stream',
+    'page callback' => 'stream_page',
     'access callback' => 'post_access',
     'access arguments' => array('create', 'post'),
     'file' => 'includes/post.pages.inc',
@@ -129,7 +130,15 @@ function post_permission() {
   );
 }
 
-
+/**
+ * Implements hook_views_api().
+ */
+function post_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'post') . '/views',
+  );
+}
 
 
 /**
@@ -143,8 +152,8 @@ function post_form($form, &$form_state, $post = NULL)
 
   $photo_style = 'thumbnail';
   $photo_uri = 'public://default_images/no_photo.png';
-  if ($user = user_load($user->uid)) {
-    $photo_uri = $user->picture->uri;
+  if ($account = user_load($user->uid)) {
+    if (!empty($account->picture)) $photo_uri = $account->picture->uri;
   }
   $photo = image_style_url($photo_style, $photo_uri);
 
@@ -161,12 +170,12 @@ function post_form($form, &$form_state, $post = NULL)
   ];
   $form['field']['message'] = [
     '#type' => 'textarea',
-    '#rows' => 2,
+    '#rows' => 1,
     '#default_value' => empty($post->message) ? '' : $post->message,
     '#attributes' => [
       'class' => ['autoExpand'],
       'placeholder' => t('What\'s new?'),
-      'data-min-rows' => 2,
+      'data-min-rows' => 1,
     ],
     '#prefix' => '<div class="post-field">',
     '#suffix' => '</div>',
@@ -189,17 +198,32 @@ function post_form_validate(&$form, &$form_state)
   if (drupal_strlen($form_state['values']['message']) < 2) form_set_error('top][message', 'Текст сообщения должен быть не короче 2 символов!');
 }
 
+/**
+ * при создании Записи
+ * определение Отправителя и Получателя сообщения
+ * установка Группы в качестве отправителя позволяет её администратору писать
+ * в группу от своего имени и от имени группы
+ *
+ * @param $form
+ * @param $form_state
+ */
 function post_form_submit(&$form, &$form_state)
 {
-  // определить контекст
-  $recid = 0;
-  $rectype = '';
-
   if (empty($form_state['#post'])) {
+    // todo определить отправителя
+    // Пользователь или Группа (группа может постить только себе)
+    $sentype = 'user';
+    $senid = $GLOBALS['user']->uid;
+
+    // определить получателя (контекст)
+    $context = _get_post_context();
+    $rectype = $context['rectype'];
+    $recid = $context['recid'];
+
     // создать Запись
     $post = entity_create('post', array(
-      'senid' => $GLOBALS['user']->uid,
-      'sentype' => 'user',
+      'senid' => $senid,
+      'sentype' => $sentype,
       'recid' => $recid,
       'rectype' => $rectype,
       'created' => time(),
@@ -240,6 +264,23 @@ function post_block_info()
   );
 
   return $blocks;
+}
+
+/**
+ * --------------------------------------- Блоки ------------------------------------------------
+ * Implements hook_block_info().
+ */
+function post_block_info_alter(&$blocks)
+{
+  // настроить вывод блока Views stream_profile по умолчанию
+  $block_settings = array(
+    'region' => 'content',
+    'status' => 1,
+    'weight' => 15,
+    'visibility' => BLOCK_VISIBILITY_PHP,
+    'pages' => '<?php return stream_profile_helper_blocks(); ?>',
+  );
+  $blocks['views']['stream_profile-block'] = array_merge($blocks['views']['stream_profile-block'], $block_settings);
 }
 
 /**

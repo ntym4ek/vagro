@@ -1,6 +1,6 @@
 <?php
 
-function posts_page()
+function stream_page()
 {
   return '';
 }
