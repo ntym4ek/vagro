@@ -29,8 +29,9 @@ function register_helper_blocks()
  */
 function post_form_helper_blocks()
 {
-  $pages = ['post/*/edit', 'post/*/delete'];
-  return _check_pages_match($pages, FALSE) && post_access("create", "post");
+  $pages_true = ['stream', 'user/*'];
+  $pages_false = ['user/*/*'];
+  return _check_pages_match($pages_true, TRUE) && _check_pages_match($pages_false, FALSE) && post_access("create", "post");
 }
 
 /**
@@ -43,12 +44,21 @@ function news_menu_helper_blocks()
 }
 
 /**
+ * блок меню Друзей
+ */
+function friends_menu_helper_blocks()
+{
+  $pages = ['user/*/friends', 'user/*/friends/*'];
+  return _check_pages_match($pages, TRUE);
+}
+/**
  * блок меню вывода Фото пользователя
  */
 function profile_photo_helper_blocks()
 {
-  $pages = ['user/*'];
-  return _check_pages_match($pages, TRUE);
+  $pages_true = ['user/*'];
+  $pages_false = ['user/*/*'];
+  return _check_pages_match($pages_true, TRUE) && _check_pages_match($pages_false, FALSE);
 }
 
 /**
@@ -63,12 +73,13 @@ function profile_actions_helper_blocks()
 /**
  * блок меню вывода Записей в профиле
  */
-
 function stream_profile_helper_blocks()
 {
-  $pages = ['user/*'];
-  return _check_pages_match($pages, TRUE);
+  $pages_true = ['stream', 'user/*'];
+  $pages_false = ['user/*/*'];
+  return _check_pages_match($pages_true, TRUE) && _check_pages_match($pages_false, FALSE);
 }
+
 
 /**
  * проверка совпадения массива страниц и текущей страницы

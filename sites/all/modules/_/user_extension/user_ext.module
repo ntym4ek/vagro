@@ -28,6 +28,21 @@ function user_ext_menu()
   );
 }
 
+/**
+ * Implements hook_entity_info_alter().
+ */
+function user_ext_entity_info_alter(&$entity_info) {
+  $entity_info['user']['view modes']['teaser'] = array(
+    'label' => t('Teaser'),
+    'custom settings' => TRUE,
+  );
+}
+
+/**
+ * форма редактирования профиля пользователя
+ *
+ * @return mixed
+ */
 function user_ext_profile_form($form, &$form_state)
 {
   $account = user_load($GLOBALS['user']->uid);
@@ -179,12 +194,12 @@ function user_ext_block_view($delta = '')
 
 function _profile_photo_block_content()
 {
-  // Пользователь по умолчанию
+  // id текущего пользователя
   $uid = $GLOBALS['user']->uid;
 
   // если мы на странице другого пользователя
   if (arg(0) == 'user' && is_numeric(arg(1))) {
-    $uid = arg(1);
+    $aid = arg(1);
   }
 
   // фото
@@ -198,16 +213,39 @@ function _profile_photo_block_content()
   // кнопки в зависимости от прав и пользователя
     // если свой профиль, кнопка редактирования
   $buttons = '';
-  if ($GLOBALS['user']->uid == $uid) {
-    if ($GLOBALS['user']->uid > 0) {
+  if ($uid == $aid) {
+    if ($uid > 0) {
       $buttons .= '<a href="/edit/profile" class="btn btn-default btn-block">' . t('Edit profile') . '</a>';
     }
   } else {
     // todo профиль другого Пользователя
 
     // todo кнопка Написать сообщение (если в Друзьях)
-    // todo кнопка Добавить в друзья
-    $buttons .= '<a href="#" class="btn btn-primary btn-block">' . t('Add to friends') . '</a>';
+
+    // кнопка Добавить в друзья
+    // модуль Flag Friends
+    // скопировано из flag_friend_preprocess_author_pane
+    $flag = flag_get_flag('friend');
+    $flag_status = flag_friend_determine_friend_status($flag, $aid, $uid);
+
+    switch ($flag_status) {
+      case (FLAG_FRIEND_FLAGGED):
+        // Remove friend
+        $buttons .= flag_friend_create_link('unfriend', $aid);
+        break;
+
+      case (FLAG_FRIEND_APPROVAL):
+      case (FLAG_FRIEND_UNFLAGGED):
+        // Add friend
+        $buttons .= $flag->theme($flag->is_flagged($aid) ? 'unflag' : 'flag', $aid);
+        break;
+
+      case (FLAG_FRIEND_PENDING):
+        // Pending friend
+        $buttons .= $flag->theme($flag->is_flagged($aid) ? 'unflag' : 'flag', $aid);
+
+        break;
+    }
   }
 
   return '<img src="' . $photo . '" alt="" class="img-responsive">' . $buttons;

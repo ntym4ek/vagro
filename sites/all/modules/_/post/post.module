@@ -6,6 +6,7 @@
 
 include 'includes/post.entity.inc';
 include 'includes/post.context.inc';
+include 'includes/post.friends.inc';
 //include 'includes/post.pages.inc';
 //include 'includes/post.admin.inc';
 
@@ -42,6 +43,14 @@ function post_menu() {
     'access arguments' => array('create', 'post'),
     'file' => 'includes/post.pages.inc',
     'type' => MENU_CALLBACK,
+  );
+  // Friends page
+  $items['friends'] = array(
+    'title' => 'Friends',
+    'page callback' => 'post_friends_page',
+    'access callback' => TRUE,
+    'weight' => 10,
+    'menu_name' => 'main-menu',
   );
   // Страница создания Записи.
 //  $items['post/add'] = array(
@@ -261,6 +270,15 @@ function post_block_info()
       'visibility' => BLOCK_VISIBILITY_PHP,
       'pages' => '<?php return news_menu_helper_blocks(); ?>',
     ],
+    'friends_menu' => [
+      'info' => t('Friends menu'),
+      'cache' => DRUPAL_CACHE_PER_USER,
+      'region' => 'sidebar_second',
+      'status' => 1,
+      'weight' => -1,
+      'visibility' => BLOCK_VISIBILITY_PHP,
+      'pages' => '<?php return friends_menu_helper_blocks(); ?>',
+    ],
   );
 
   return $blocks;
@@ -298,10 +316,12 @@ function post_block_view($delta = '')
     case 'news_menu':
       $block['content'] = _news_menu_block_content();
       return $block;
+
+    case 'friends_menu':
+      $block['content'] = _friends_menu_block_content();
+      return $block;
   }
 }
-
-
 
 function _news_menu_block_content()
 {

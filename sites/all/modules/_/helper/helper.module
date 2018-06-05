@@ -27,6 +27,7 @@ function helper_form_alter(&$form, &$form_state = array(), $form_id = NULL)
     switch ($form_id) {
       /** -------------------------- Блок поиска ---------------------------- */
       case 'search_block_form':
+        // изменить размер строки и функцию темизации
         $form['search_block_form']['#attributes']['class'][] = 'input-sm';
         $form['search_block_form']['#theme_wrappers'] = array('vagro_search_form_wrapper');
         break;

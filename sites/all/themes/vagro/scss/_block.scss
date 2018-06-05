@@ -37,5 +37,8 @@
 
 #block-user-ext-profile-photo {
   padding: 15px;
-  .btn { margin-top: 10px; }
+  .btn {
+    margin-top: 10px;
+    display: block;
+  }
 }

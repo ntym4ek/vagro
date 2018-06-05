@@ -33,7 +33,11 @@
  *
  * @ingroup themeable
  */
+hide($user_profile['flags']);
+hide($user_profile['user_picture']);
+hide($user_profile['links']['flag']);
 ?>
+
 <div class="profile"<?php print $attributes; ?>>
   <div class="user-info">
     <div class="user-top">
@@ -54,7 +58,7 @@
 
   <div class="user-counters">
     <div class="user-counter">
-      <div class="count">0</div>
+      <div class="count"><?php print $counts['friends']; ?></div>
       <div class="count-label">Друзей</div>
     </div>
     <div class="user-counter">
@@ -70,4 +74,6 @@
       <div class="count-label">Подписок</div>
     </div>
   </div>
+
+  <?php print render($user_profile); ?>
 </div>
