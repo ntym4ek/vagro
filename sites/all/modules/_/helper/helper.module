@@ -32,6 +32,15 @@ function helper_form_alter(&$form, &$form_state = array(), $form_id = NULL)
         $form['search_block_form']['#theme_wrappers'] = array('vagro_search_form_wrapper');
         break;
 
+      /** -------------------------- Раскрытые фильтры ---------------------- */
+      case 'views_exposed_form':
+        // добавить значок лупы
+        $form['s']['#prefix'] = '<i class="fas fa-search"></i>';
+        if ($form['#action'] == '/friends/find') {
+          $form['s']['#attributes']['placeholder'] = 'Введите имя или город';
+        }
+        break;
+
     }
   }
 }

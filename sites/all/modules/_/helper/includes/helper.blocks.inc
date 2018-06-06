@@ -48,7 +48,7 @@ function news_menu_helper_blocks()
  */
 function friends_menu_helper_blocks()
 {
-  $pages = ['user/*/friends', 'user/*/friends/*'];
+  $pages = ['user/*/friends', 'user/*/friends/*', 'friends/*'];
   return _check_pages_match($pages, TRUE);
 }
 /**

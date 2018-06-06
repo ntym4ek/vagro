@@ -26,16 +26,20 @@ function _friends_menu_block_content()
   // дерево пунктов меню
   $tree = array();
   $tree[]['link'] = array(
-    'title' => 'My friends',
+    'title' => t('My friends'),
     'href' => "user/$uid/friends",
   );
   $tree[]['link'] = array(
-    'title' => 'Pending friends',
+    'title' => t('Pending friends'),
     'href' => "user/$uid/friends/pending",
   );
   $tree[]['link'] = array(
-    'title' => 'Friend requests',
+    'title' => t('Friend requests'),
     'href' => "user/$uid/friends/flagged",
+  );
+  $tree[]['link'] = array(
+    'title' => t('Friend search'),
+    'href' => "friends/find",
   );
 
   // значения общие для всех пунктов
