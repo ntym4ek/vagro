@@ -7,9 +7,10 @@
  */
 function user_post_info($id)
 {
-  $sen_img_uri = $sen_name = $sen_url = '';
+  $sen_name = $sen_url = '';
+  $sen_img_uri = 'public://default_images/no_photo.png';
   if ($account = user_load($id)) {
-    $sen_img_uri = $account->picture->uri;
+    if (!empty($account->picture)) $sen_img_uri = $account->picture->uri;
     $sen_name = $account->realname;
     $sen_url = url('user/' . $account->uid);
   }

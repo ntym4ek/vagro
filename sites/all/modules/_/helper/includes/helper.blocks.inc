@@ -71,11 +71,20 @@ function profile_actions_helper_blocks()
 }
 
 /**
- * блок меню вывода Записей в профиле
+ * блок вывода Записей в Новостях
+ */
+function stream_helper_blocks()
+{
+  $pages_true = ['stream'];
+  return _check_pages_match($pages_true, TRUE);
+}
+
+/**
+ * блок вывода Записей в профиле
  */
 function stream_profile_helper_blocks()
 {
-  $pages_true = ['stream', 'user/*'];
+  $pages_true = ['user/*'];
   $pages_false = ['user/*/*'];
   return _check_pages_match($pages_true, TRUE) && _check_pages_match($pages_false, FALSE);
 }

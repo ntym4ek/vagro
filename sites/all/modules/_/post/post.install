@@ -10,7 +10,7 @@
  */
 function post_schema() {
   $schema = array();
-  $schema['posts'] = array(
+  $schema['post'] = array(
     'description' => 'Stores posts.',
     'fields' => array(
       'id' => array(

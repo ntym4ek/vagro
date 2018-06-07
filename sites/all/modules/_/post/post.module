@@ -105,9 +105,9 @@ function post_menu() {
  */
 function post_permission() {
   return array(
-    'configure posts settings' => array(
-      'title' => t('Configure posts settings'),
-      'description' => t('Allows users to configure posts settings.'),
+    'configure post settings' => array(
+      'title' => t('Configure post settings'),
+      'description' => t('Allows users to configure post settings.'),
       'restrict access' => TRUE,
     ),
     'administer posts' => array(
@@ -119,19 +119,19 @@ function post_permission() {
       'restrict access' => TRUE,
     ),
     'edit own posts' => array(
-      'title' => t('Edit own posts'),
+      'title' => t('Edit own post'),
       'restrict access' => TRUE,
     ),
     'delete any posts' => array(
-      'title' => t('Delete any posts'),
+      'title' => t('Delete any post'),
       'restrict access' => TRUE,
     ),
     'delete own posts' => array(
-      'title' => t('Delete own posts'),
+      'title' => t('Delete own post'),
       'restrict access' => TRUE,
     ),
     'create posts' => array(
-      'title' => t('Create new posts'),
+      'title' => t('Create new post'),
     ),
     'view posts' => array(
       'title' => t('View posts'),
@@ -290,15 +290,25 @@ function post_block_info()
  */
 function post_block_info_alter(&$blocks)
 {
-  // настроить вывод блока Views stream_profile по умолчанию
+  // настроить вывод блока Views stream по умолчанию
   $block_settings = array(
     'region' => 'content',
     'status' => 1,
-    'weight' => 15,
+    'weight' => 14,
     'visibility' => BLOCK_VISIBILITY_PHP,
-    'pages' => '<?php return stream_profile_helper_blocks(); ?>',
+    'pages' => '<?php return stream_helper_blocks(); ?>',
   );
-  $blocks['views']['stream_profile-block'] = array_merge($blocks['views']['stream_profile-block'], $block_settings);
+  // при установке модуля блока ещё нет, настройки применятся после сброса кэша
+  // todo найти способ применить настройки при установке модуля
+  if (isset($blocks['views']['stream-block'])) {
+    $blocks['views']['stream-block'] = array_merge($blocks['views']['stream-block'], $block_settings);
+  }
+  // настроить вывод блока Views stream_profile по умолчанию
+  $block_settings['weight'] += 1;
+  $block_settings['pages'] = '<?php return stream_profile_helper_blocks(); ?>';
+  if (isset($blocks['views']['stream_profile-block'])) {
+    $blocks['views']['stream_profile-block'] = array_merge($blocks['views']['stream_profile-block'], $block_settings);
+  }
 }
 
 /**
@@ -338,3 +348,33 @@ function _news_menu_block_content()
   return render($profile_nav);
 }
 
+
+/**
+ * --------------------------------------- Views ------------------------------------------------
+ */
+
+/**
+ * Implements of hook_views_data().
+ */
+function post_views_data() {
+  return array(
+    'post' => array(
+      'from_friends_filter' => array(
+        'group' => t('Custom'),
+        'title' => t('Only from friends'),
+        'help' => t('Filter posts by friends'),
+        'filter' => array(
+          'handler' => 'post_handler_filter_from_friends_filter',
+        ),
+      ),
+      'to_current_user_filter' => array(
+        'group' => t('Custom'),
+        'title' => t('Post sent to current user'),
+        'help' => t('Filter posts sent to current user'),
+        'filter' => array(
+          'handler' => 'post_handler_filter_to_current_user_filter',
+        ),
+      ),
+    ),
+  );
+}

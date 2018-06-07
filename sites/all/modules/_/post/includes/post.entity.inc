@@ -13,7 +13,7 @@ function post_entity_info() {
       'entity class' => 'Entity', // Класс сущности.
       'controller class' => 'EntityAPIController', // Контроллер сущности.
       'views controller class' => 'EntityDefaultViewsController',
-      'base table' => 'posts', // Таблица, в которой хранится информация об сущностях.
+      'base table' => 'post', // Таблица, в которой хранится информация об сущностях.
       'view callback' => 'post_view_multiple', // Функция, которая генерирует рендер массив сущности.
       'uri callback' => 'post_uri', // Функция, которая возваращает uri сущности.
       'fieldable' => TRUE, // Позволяем прикреплять поля к сущности.
@@ -26,7 +26,7 @@ function post_entity_info() {
           'label' => t('Post'), // Человеко-понятное название типа.
           'admin' => array(
             'path' => 'admin/config/post/posts', // Путь, по которому доступна админка.
-            'access arguments' => array('configure posts settings'), // Права доступа в админку.
+            'access arguments' => array('configure post settings'), // Права доступа в админку.
           ),
         ),
       ),
@@ -116,37 +116,37 @@ function post_access($op, $entity_type, $post = NULL, $account = NULL)
   }
 
   // Проверяем, может ли пользователь создавать новые Записи.
-  if ($op == 'create' && user_access('create posts', $account)) {
+  if ($op == 'create' && user_access('create post', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
 
   if ($op == 'update') {
     // Проверяем, может ли пользователь редактирвоать любые Записи.
-    if (user_access('edit any posts', $account)) {
+    if (user_access('edit any post', $account)) {
       $rights[$account->uid][$cid][$op] = TRUE;
       return TRUE;
     }
     // Проверяем, может ли пользователь редактирвоать свои Записи.
-    elseif (user_access('edit own posts', $account) && in_array($account->uid, $uids)) {
+    elseif (user_access('edit own post', $account) && in_array($account->uid, $uids)) {
       $rights[$account->uid][$cid][$op] = TRUE;
       return TRUE;
     }
   }
   elseif ($op == 'delete') {
     // Проверяем, может ли пользователь удалять любые Записи.
-    if (user_access('delete any posts', $account)) {
+    if (user_access('delete any post', $account)) {
       $rights[$account->uid][$cid][$op] = TRUE;
       return TRUE;
     }
     // Проверяем, может ли пользователь удалять свои Записи.
-    elseif (user_access('delete own posts', $account) && in_array($account->uid, $uids)) {
+    elseif (user_access('delete own post', $account) && in_array($account->uid, $uids)) {
       $rights[$account->uid][$cid][$op] = TRUE;
       return TRUE;
     }
   }
   // Проверяем, может ли пользователь просматривать Записи.
-  elseif ($op == 'view' && user_access('view posts', $account)) {
+  elseif ($op == 'view' && user_access('view post', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
@@ -322,10 +322,10 @@ function post_view_multiple($posts, $view_mode = 'full', $langcode = NULL) {
   $build = array();
   $weight = 0;
   foreach ($posts as $post) {
-    $build['posts'][$post->id] = post_view($post, $view_mode, $langcode);
-    $build['posts'][$post->id]['#weight'] = $weight++;
+    $build['post'][$post->id] = post_view($post, $view_mode, $langcode);
+    $build['post'][$post->id]['#weight'] = $weight++;
   }
-  $build['posts']['#sorted'] = TRUE;
+  $build['post']['#sorted'] = TRUE;
   return $build;
 }
 
@@ -398,4 +398,3 @@ function post_build_content($post, $view_mode = 'full', $langcode = NULL) {
     '#attributes' => array('class' => array('links')),
   );
 }
-

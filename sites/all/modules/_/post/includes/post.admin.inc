@@ -16,7 +16,7 @@ function post_admin_posts() {
 //    'operations' => array('data' => t('Operations')),
   );
 
-  $query = db_select('posts', 'p')->extend('PagerDefault')->extend('TableSort');
+  $query = db_select('post', 'p')->extend('PagerDefault')->extend('TableSort');
   $post_ids = $query->fields('p', array('id'))
     ->limit(50)
     ->orderByHeader($header)

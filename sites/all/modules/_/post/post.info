@@ -6,3 +6,5 @@ package = Custom
 scripts[] = 'post.js'
 
 files[] = views/post.views_default.inc
+files[] = views/post_handler_filter_from_friends_filter.inc
+files[] = views/post_handler_filter_to_current_user_filter.inc

@@ -222,7 +222,7 @@
     <table id="84" parent="2" name="pathauto_state">
       <Comment>The status of each entity alias (whether it was...</Comment>
     </table>
-    <table id="85" parent="2" name="posts">
+    <table id="85" parent="2" name="post">
       <Comment>Stores posts.</Comment>
     </table>
     <table id="86" parent="2" name="queue">
@@ -4845,53 +4845,53 @@ entity_id</ColNames>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
     </column>
-    <column id="925" parent="85" name="recid">
-      <Position>4</Position>
-      <Comment>The ID of the entity that received the post.</Comment>
-      <DataType>int(10) unsigned|0</DataType>
-      <NotNull>1</NotNull>
-      <DefaultExpression>&apos;0&apos;</DefaultExpression>
-    </column>
-    <column id="926" parent="85" name="rectype">
-      <Position>5</Position>
-      <Comment>The type of entity that received the post (context).</Comment>
-      <DataType>varchar(255)|0</DataType>
-      <NotNull>1</NotNull>
-      <DefaultExpression>&apos;&apos;</DefaultExpression>
-    </column>
-    <column id="927" parent="85" name="created">
-      <Position>6</Position>
-      <Comment>The time the post was created.</Comment>
-      <DataType>int(11)|0</DataType>
-      <NotNull>1</NotNull>
-      <DefaultExpression>&apos;0&apos;</DefaultExpression>
-    </column>
-    <column id="928" parent="85" name="changed">
-      <Position>7</Position>
-      <Comment>The time the post was changed.</Comment>
-      <DataType>int(11)|0</DataType>
-      <NotNull>1</NotNull>
-      <DefaultExpression>&apos;0&apos;</DefaultExpression>
-    </column>
-    <column id="929" parent="85" name="message">
-      <Position>8</Position>
-      <Comment>The post.</Comment>
-      <DataType>text|0</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="930" parent="85" name="senid">
+    <column id="925" parent="85" name="senid">
       <Position>2</Position>
       <Comment>The ID of the entity that created the post.</Comment>
       <DataType>int(10) unsigned|0</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;0&apos;</DefaultExpression>
     </column>
-    <column id="931" parent="85" name="sentype">
+    <column id="926" parent="85" name="sentype">
       <Position>3</Position>
       <Comment>The type of entity that created the post.</Comment>
       <DataType>varchar(255)|0</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
+    </column>
+    <column id="927" parent="85" name="recid">
+      <Position>4</Position>
+      <Comment>The ID of the entity that received the post.</Comment>
+      <DataType>int(10) unsigned|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="928" parent="85" name="rectype">
+      <Position>5</Position>
+      <Comment>The type of entity that received the post (context).</Comment>
+      <DataType>varchar(255)|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;&apos;</DefaultExpression>
+    </column>
+    <column id="929" parent="85" name="created">
+      <Position>6</Position>
+      <Comment>The time the post was created.</Comment>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="930" parent="85" name="changed">
+      <Position>7</Position>
+      <Comment>The time the post was changed.</Comment>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="931" parent="85" name="message">
+      <Position>8</Position>
+      <Comment>The post.</Comment>
+      <DataType>text|0</DataType>
+      <NotNull>1</NotNull>
     </column>
     <column id="932" parent="85" name="image_id">
       <Position>9</Position>
