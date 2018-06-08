@@ -39,7 +39,7 @@ function _friends_menu_block_content()
   );
   $tree[]['link'] = array(
     'title' => t('Friend search'),
-    'href' => "friends/find",
+    'href' => "friends/search",
   );
 
   // значения общие для всех пунктов

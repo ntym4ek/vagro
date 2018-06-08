@@ -283,8 +283,13 @@ function post_preprocess_post(&$vars) {
 
   // меню действий с постом
   $actions = [];
-  if (post_access('update', 'post', $post)) { $actions[] = l(t('Edit'), 'post/' . $post->id . '/edit', array('query' => array('destination' => $_GET['q']))); }
-  if (post_access('delete', 'post', $post)) { $actions[] = l(t('Delete'), 'post/' . $post->id . '/delete', array('query' => array('destination' => $_GET['q']))); }
+  // для авторов поста
+  if ($post->sentype == 'user' && $post->senid == $GLOBALS['user']->uid) {
+    if (post_access('update', 'post', $post)) { $actions[] = l(t('Edit'), 'post/' . $post->id . '/edit', array('query' => array('destination' => $_GET['q']))); }
+    if (post_access('delete', 'post', $post)) { $actions[] = l(t('Delete'), 'post/' . $post->id . '/delete', array('query' => array('destination' => $_GET['q']))); }
+  } else {
+
+  }
 
   $vars['actions'] = theme('item_list',
     array(

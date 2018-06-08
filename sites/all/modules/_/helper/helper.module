@@ -39,6 +39,10 @@ function helper_form_alter(&$form, &$form_state = array(), $form_id = NULL)
         if ($form['#action'] == '/friends/find') {
           $form['s']['#attributes']['placeholder'] = 'Введите имя или город';
         }
+        if ($form['#action'] == '/stream/search') {
+          $form['s']['#attributes']['placeholder'] = 'Поиск по новостям';
+        }
+
         break;
 
     }

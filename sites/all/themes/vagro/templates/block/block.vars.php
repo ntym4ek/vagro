@@ -17,9 +17,14 @@
  *
  * @ingroup theme_preprocess
  */
-function vagro_preprocess_block(array &$vars) {
+function vagro_preprocess_block(&$vars) {
   if (in_array($vars['block']->delta, ['main-menu'])
       || in_array($vars['block']->region, ['footer'])){
     $vars['classes_array'] = array_diff($vars['classes_array'], ['block']);
+  }
+
+  // убрать обёртку блока при выводе контента
+  if ($vars['block_html_id'] == 'block-system-main') {
+    $vars['theme_hook_suggestions'][] = 'block__no_wrapper';
   }
 }

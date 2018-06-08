@@ -16,11 +16,12 @@ function _get_post_context()
   $uid = $GLOBALS['user']->uid;
 
   // отправка себе Пользователю
+  // получателя не указывать, чтобы можно было отделить сообщения для всех от адресных
   $pages = ['stream', 'user', 'user/' . $uid];
   if ($page_match = _check_pages_match($pages)) {
     return array(
-      'rectype' => 'user',
-      'recid' => $uid,
+      'rectype' => '',
+      'recid' => 0,
     );
   }
 
@@ -37,7 +38,7 @@ function _get_post_context()
 
   // если ничего не подошла, вернуть контекст по умолчанию
   return array(
-    'rectype' => 'user',
-    'recid' => $uid,
+    'rectype' => '',
+    'recid' => 0,
   );
 }

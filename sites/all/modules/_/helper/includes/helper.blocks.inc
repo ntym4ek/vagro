@@ -39,7 +39,7 @@ function post_form_helper_blocks()
  */
 function news_menu_helper_blocks()
 {
-  $pages = ['stream', 'post/*'];
+  $pages = ['stream', 'stream/*', 'post/*'];
   return _check_pages_match($pages, TRUE);
 }
 

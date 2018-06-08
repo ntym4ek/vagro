@@ -367,6 +367,14 @@ function post_views_data() {
           'handler' => 'post_handler_filter_from_friends_filter',
         ),
       ),
+      'from_current_user_filter' => array(
+        'group' => t('Custom'),
+        'title' => t('Post sent by current user'),
+        'help' => t('Filter posts sent by current user'),
+        'filter' => array(
+          'handler' => 'post_handler_filter_from_current_user_filter',
+        ),
+      ),
       'to_current_user_filter' => array(
         'group' => t('Custom'),
         'title' => t('Post sent to current user'),
